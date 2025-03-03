@@ -1,21 +1,21 @@
 {
   "extensionDescription": {
     "description": "Extension description",
-    "message": "Chrome extension boilerplate developed with Vite, React and Typescript"
+    "message": "A custom browser start page for organizing bookmarks, widgets, and tools, built with React, Vite, and TypeScript."
   },
   "extensionName": {
     "description": "Extension name",
-    "message": "Chrome extension boilerplate"
+    "message": "Browser Start Page"
   },
   "toggleTheme": {
-    "message": "Toggle theme"
+    "message": "Toggle Theme"
   },
   "loading": {
     "message": "Loading..."
   },
   "greeting": {
     "description": "Greeting message",
-    "message": "Hello, My name is $NAME$",
+    "message": "Welcome to your Browser Start Page, $NAME$!",
     "placeholders": {
       "name": {
         "content": "$1",
@@ -24,7 +24,7 @@
     }
   },
   "hello": {
-    "description": "Placeholder example",
-    "message": "Hello $1"
+    "description": "Simple greeting",
+    "message": "Hello, $1!"
   }
 }

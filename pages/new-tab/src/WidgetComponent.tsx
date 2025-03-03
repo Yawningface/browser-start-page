@@ -29,6 +29,19 @@ const WidgetComponent: React.FC<WidgetProps> = ({ widget, updateWidget, removeWi
   // Read user options from localStorage (for text color and font)
   const storedOptions = localStorage.getItem('userOptions');
   const userOptions = storedOptions ? JSON.parse(storedOptions) : defaultOptions;
+
+  // Determine the title color.
+  // If in light mode and the stored textColor is the default yellow (#ebb305), override with black.
+  let titleColor: string;
+  if (userOptions && userOptions.textColor) {
+    titleColor = isLight && userOptions.textColor.toLowerCase() === "#ebb305"
+      ? "#000000"
+      : userOptions.textColor;
+  } else {
+    titleColor = isLight ? "#000000" : "#ffffff";
+  }
+
+  // Set overall widget style using the user-defined font and text color.
   const widgetStyle: React.CSSProperties = {
     fontFamily: userOptions.fontFamily,
     color: userOptions.textColor,
@@ -77,7 +90,6 @@ const WidgetComponent: React.FC<WidgetProps> = ({ widget, updateWidget, removeWi
 
   const startEditing = (index: number) => {
     setEditIndex(index);
-    // Use (widget.urls || []) to avoid undefined errors
     setEditUrl((widget.urls || [])[index].url);
     setEditName((widget.urls || [])[index].displayName);
   };
@@ -192,7 +204,10 @@ const WidgetComponent: React.FC<WidgetProps> = ({ widget, updateWidget, removeWi
           </div>
         ) : (
           <div className="flex items-center">
-            <h4 className="font-bold text-xl text-yellow-500">{widget.title || "Bookmarks"}</h4>
+            {/* Updated title: remove text-yellow-500 and use inline style */}
+            <h4 className="font-bold text-xl" style={{ color: titleColor }}>
+              {widget.title || "Bookmarks"}
+            </h4>
             {isInEditMode && (
               <button
                 onClick={startEditingTitle}
@@ -334,7 +349,8 @@ const WidgetComponent: React.FC<WidgetProps> = ({ widget, updateWidget, removeWi
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#ebb305] hover:underline break-all"
+                      className="hover:underline break-all"
+                      style={{ color: titleColor }}
                     >
                       {item.displayName}
                     </a>

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import '@src/Options.css';
 import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
-import { ToggleButton } from '@extension/ui';
 import { t } from '@extension/i18n';
 
 interface OptionsConfig {
@@ -24,18 +22,18 @@ const DEFAULT_CONFIG: OptionsConfig = {
 const Options = () => {
   const theme = useStorage(exampleThemeStorage);
   const isLight = theme === 'light';
-  
+
   // Load options configuration from localStorage.
   const [config, setConfig] = useState<OptionsConfig>(() => {
     const stored = localStorage.getItem('userOptions');
     return stored ? JSON.parse(stored) : DEFAULT_CONFIG;
   });
-  
+
   // Save config changes to localStorage.
   useEffect(() => {
     localStorage.setItem('userOptions', JSON.stringify(config));
   }, [config]);
-  
+
   const exportData = () => {
     const dataStr = JSON.stringify({ config }, null, 2);
     const dataUri =
@@ -44,6 +42,29 @@ const Options = () => {
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', 'userOptions.json');
     linkElement.click();
+  };
+
+  const importConfig = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = () => {
+      const file = input.files ? input.files[0] : null;
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importedConfig = JSON.parse(e.target?.result as string);
+            setConfig(importedConfig);
+            alert('Configuration imported successfully!');
+          } catch (error) {
+            alert('Failed to import configuration: Invalid file.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
   };
 
   const handleBackgroundImageFile = (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,11 +85,6 @@ const Options = () => {
     setConfig(DEFAULT_CONFIG);
   };
 
-  const goBackToNewTab = () => {
-    // Simply close the current window. This assumes the Options page is opened in its own tab.
-    window.close();
-  };
-
   return (
     <div className={`min-h-screen p-4 ${isLight ? 'bg-slate-50 text-gray-900' : 'bg-gray-800 text-gray-100'}`}>
       <div className="max-w-lg mx-auto">
@@ -79,11 +95,20 @@ const Options = () => {
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Theme</h2>
           <div className="flex items-center">
-            <ToggleButton onClick={exampleThemeStorage.toggle}>
-              {t('toggleTheme')}
-            </ToggleButton>
+            {/* Tailwind switch built from a checkbox */}
+            <label className="relative inline-block w-12 h-6 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!isLight}
+                onChange={exampleThemeStorage.toggle}
+                className="sr-only peer"
+              />
+              <div className="w-full h-full bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors duration-200"></div>
+              <div className="absolute top-0 left-0 w-6 h-6 bg-white rounded-full border border-gray-300 
+                transition-transform duration-200 peer-checked:translate-x-6"></div>
+            </label>
             <span className="ml-4">
-              Current Theme: {isLight ? 'Light' : 'Dark'}
+              {isLight ? 'Light Mode (☀️)' : 'Dark Mode (🌙)'}
             </span>
           </div>
         </section>
@@ -186,15 +211,26 @@ const Options = () => {
         </section>
         
         <section className="mb-6 border p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-2">Export Configuration</h2>
-          <button
-            onClick={exportData}
-            className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            Export Data
-          </button>
+          <h2 className="text-xl font-semibold mb-2">Export/Import Configuration</h2>
+          <p className="text-sm mb-2 text-gray-500">
+            Use the buttons below to export your current options configuration to a file, or to import a configuration from a file.
+          </p>
+          <div className="flex flex-col space-y-2">
+            <button
+              onClick={exportData}
+              className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Export Data
+            </button>
+            <button
+              onClick={importConfig}
+              className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Import Configuration
+            </button>
+          </div>
         </section>
-
+  
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Reset Configuration</h2>
           <button
@@ -204,15 +240,7 @@ const Options = () => {
             Reset to Defaults
           </button>
         </section>
-
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={goBackToNewTab}
-            className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Back to New Tab
-          </button>
-        </div>
+  
       </div>
     </div>
   );

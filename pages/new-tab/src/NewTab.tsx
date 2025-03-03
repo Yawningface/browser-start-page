@@ -26,6 +26,7 @@ export type Columns = {
   [key: string]: Widget[];
 };
 
+// New custom default configuration for new installs.
 const getStoredColumns = (): Columns => {
   const saved = localStorage.getItem('columns');
   if (saved) {
@@ -35,12 +36,54 @@ const getStoredColumns = (): Columns => {
       console.error('Error parsing columns from localStorage:', error);
     }
   }
-  // Default: one bookmark widget in the first column.
+  // On a new install, return a custom default configuration:
   return {
-    'col-1': [{ id: 'widget-1', type: 'bookmark', title: 'Bookmarks', urls: [] }],
-    'col-2': [],
-    'col-3': [],
-    'col-4': [],
+    'col-1': [
+      {
+        id: 'widget-google-tools',
+        type: 'bookmark',
+        title: 'Google Tools',
+        urls: [
+          { url: "https://drive.google.com", displayName: "Drive" },
+          { url: "https://mail.google.com", displayName: "Gmail" },
+          { url: "https://calendar.google.com", displayName: "Calendar" },
+        ],
+      },
+    ],
+    'col-2': [
+      {
+        id: 'widget-microsoft-tools',
+        type: 'bookmark',
+        title: 'Microsoft Tools',
+        urls: [
+          { url: "https://www.office.com", displayName: "Office 365" },
+          { url: "https://outlook.live.com", displayName: "Outlook" },
+        ],
+      },
+    ],
+    'col-3': [
+      {
+        id: 'widget-pomodoro',
+        type: 'embed',
+        title: 'Pomodoro',
+        embedUrl: 'https://notion.yawningface.org/pomodoro',
+        embedScale: 0.6,
+      },
+    ],
+    'col-4': [
+      {
+        id: 'widget-ai-tools',
+        type: 'bookmark',
+        title: 'AI Tools',
+        urls: [
+          { url: "https://chat.openai.com", displayName: "ChatGPT" },
+          { url: "https://chat.mistral.ai/chat", displayName: "Mistral Chat" },
+          { url: "https://www.perplexity.ai", displayName: "Perplexity" },
+          { url: "https://claude.ai/new", displayName: "Claude" },
+          { url: "https://grok.com/", displayName: "Grok" },
+        ],
+      },
+    ],
   };
 };
 
@@ -65,9 +108,10 @@ const presetBookmarkCategories: {
 } = {
   "AI Tools": [
     { url: "https://chat.openai.com", displayName: "ChatGPT" },
-    { url: "https://www.anthropic.com/claude", displayName: "Claude" },
-    { url: "https://www.cohere.ai", displayName: "Cohere" },
-    { url: "https://www.grok.ai", displayName: "Grok" },
+    { url: "https://chat.mistral.ai/chat", displayName: "Mistral Chat" },
+    { url: "https://www.perplexity.ai", displayName: "Perplexity" },
+    { url: "https://claude.ai/new", displayName: "Claude" },
+    { url: "https://grok.com/", displayName: "Grok" },
   ],
   "Google Tools": [
     { url: "https://drive.google.com", displayName: "Drive" },
@@ -90,6 +134,39 @@ const presetBookmarkCategories: {
   ],
 };
 
+const presetEmbedPages: {
+  [name: string]: { embedUrl: string; title: string; embedScale: number };
+} = {
+  "Pomodoro": {
+    embedUrl: "https://notion.yawningface.org/pomodoro",
+    title: "Pomodoro",
+    embedScale: 0.6,
+  },
+  "Day of the year": {
+    embedUrl: "https://notion.yawningface.org/day-of-year",
+    title: "Day of the year",
+    embedScale: 0.6,
+  },
+  "Chronometer": {
+    embedUrl: "https://notion.yawningface.org/chronometer",
+    title: "Chronometer",
+    embedScale: 0.6,
+  },
+  "Deadline countdown": {
+    embedUrl: "https://notion.yawningface.org/deadline-countdown",
+    title: "Deadline countdown",
+    embedScale: 0.6,
+  },
+  "Lofi music player": {
+    embedUrl: "https://notion.yawningface.org/lofi",
+    title: "Lofi music player",
+    embedScale: 0.6,
+  },
+};
+
+import { useStorage } from '@extension/shared';
+import { exampleThemeStorage } from '@extension/storage';
+
 const NewTab = () => {
   const [columns, setColumns] = useState<Columns>(getStoredColumns());
   const [isEditMode, setIsEditMode] = useState(false);
@@ -102,6 +179,10 @@ const NewTab = () => {
   
   // Google search enabled by default
   const [enableGoogleSearch, setEnableGoogleSearch] = useState(true);
+  
+  // Use the theme from storage (light/dark) to decide defaults if no custom background is set.
+  const theme = useStorage(exampleThemeStorage);
+  const isLight = theme === 'light';
   
   useEffect(() => {
     localStorage.setItem('columns', JSON.stringify(columns));
@@ -188,6 +269,25 @@ const NewTab = () => {
 
   const [selectedPreset, setSelectedPreset] = useState<string>("AI Tools");
 
+  // New state and function for embed preset widgets.
+  const [selectedEmbedPreset, setSelectedEmbedPreset] = useState<string>("Pomodoro");
+
+  const addPresetEmbedWidget = (presetName: string) => {
+    const preset = presetEmbedPages[presetName];
+    if (!preset) return;
+    const newWidget: Widget = {
+      id: `widget-${Date.now()}`,
+      type: 'embed',
+      title: preset.title,
+      embedUrl: preset.embedUrl,
+      embedScale: preset.embedScale,
+    };
+    setColumns({
+      ...columns,
+      'col-1': [newWidget, ...columns['col-1']],
+    });
+  };
+
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode);
   };
@@ -203,6 +303,30 @@ const NewTab = () => {
     linkElement.click();
   };
 
+  // New import configuration function
+  const importData = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = () => {
+      const file = input.files ? input.files[0] : null;
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importedData = JSON.parse(e.target?.result as string);
+            setColumns(importedData);
+            alert('Configuration imported successfully!');
+          } catch (error) {
+            alert('Failed to import configuration: Invalid file.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
+
   const openExtensionOptions = () => {
     if (chrome && chrome.runtime && chrome.runtime.openOptionsPage) {
       chrome.runtime.openOptionsPage();
@@ -213,16 +337,13 @@ const NewTab = () => {
 
   const columnOrder = ['col-1', 'col-2', 'col-3', 'col-4'];
 
+  // Build the container style: if a custom background is chosen, use it;
+  // otherwise, use theme-based defaults.
   let containerStyle: React.CSSProperties = {
     fontFamily: options.fontFamily,
   };
-  if (options.backgroundMode === "default") {
-    containerStyle = {
-      ...containerStyle,
-      backgroundColor: "#111827",
-      color: "#f3f4f6",
-    };
-  } else if (options.backgroundMode === "solid") {
+
+  if (options.backgroundMode === "solid" && options.backgroundColor) {
     containerStyle = {
       ...containerStyle,
       backgroundColor: options.backgroundColor,
@@ -235,6 +356,13 @@ const NewTab = () => {
       backgroundSize: "cover",
       backgroundPosition: "center",
       color: options.textColor,
+    };
+  } else {
+    // Use theme defaults if no custom background is set.
+    containerStyle = {
+      ...containerStyle,
+      backgroundColor: isLight ? "#f3f4f6" : "#111827",
+      color: isLight ? "#1f2937" : "#f3f4f6",
     };
   }
 
@@ -276,7 +404,6 @@ const NewTab = () => {
 
       {/* Google Search Area */}
       {isEditMode ? (
-        // In edit mode, show a small toggle button to enable/disable Google search.
         <div className="my-4">
           <button 
             onClick={() => setEnableGoogleSearch(prev => !prev)}
@@ -287,7 +414,6 @@ const NewTab = () => {
           </button>
         </div>
       ) : (
-        // When not in edit mode, if Google search is enabled, show the full search bar.
         enableGoogleSearch && (
           <div className="my-4">
             <GoogleSearchBar />
@@ -316,6 +442,12 @@ const NewTab = () => {
             >
               Export Data
             </button>
+            <button
+              onClick={importData}
+              className="px-3 py-2 bg-indigo-500 text-white font-bold rounded-md shadow hover:bg-indigo-600"
+            >
+              Import Configuration
+            </button>
           </div>
           <div className="flex items-center gap-2 mt-4">
             <select
@@ -333,7 +465,27 @@ const NewTab = () => {
               onClick={() => addPresetBookmarkWidget(selectedPreset)}
               className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
             >
-              Add Preset Widget
+              Add Preset Bookmark Widget
+            </button>
+          </div>
+          {/* New preset embed widget section */}
+          <div className="flex items-center gap-2 mt-4">
+            <select
+              value={selectedEmbedPreset}
+              onChange={(e) => setSelectedEmbedPreset(e.target.value)}
+              className="p-2 border rounded bg-gray-200 text-black"
+            >
+              {Object.keys(presetEmbedPages).map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => addPresetEmbedWidget(selectedEmbedPreset)}
+              className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+            >
+              + Add Preset Embed Widget
             </button>
           </div>
         </>
@@ -410,4 +562,4 @@ const NewTab = () => {
   );
 };
 
-export default NewTab;
+export default NewTab

@@ -20,12 +20,18 @@ const EmbedPageWidgetComponent: React.FC<EmbedWidgetProps> = ({
   const theme = useStorage(exampleThemeStorage);
   const isLight = theme === 'light';
 
+  // Retrieve user options (for textColor override)
+  const [userOptions] = useState<any>(() => {
+    const stored = localStorage.getItem('userOptions');
+    return stored ? JSON.parse(stored) : null;
+  });
+
   if (!widget) {
     console.error('EmbedPageWidgetComponent received an undefined widget.');
     return <div className="p-2 bg-red-100 text-red-800">Error: Widget not found.</div>;
   }
 
-  // Use theme-based styling similar to WidgetComponent
+  // Use theme-based styling for container, input, and buttons
   const containerClass = isLight
     ? "p-4 bg-white text-black rounded shadow"
     : "p-4 bg-gray-800 text-white rounded shadow";
@@ -39,7 +45,20 @@ const EmbedPageWidgetComponent: React.FC<EmbedWidgetProps> = ({
     ? "px-2 py-1 bg-gray-300 text-black text-xs rounded hover:bg-gray-400"
     : "px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700";
 
-  // Local states for title, URL, scale, and allow scroll (default off)
+  // Determine the title color:
+  // If userOptions has a specific textColor, use it.
+  // In light mode, if the textColor is the default yellow (#ebb305), override it with black.
+  let titleColor: string;
+  if (userOptions && userOptions.textColor) {
+    titleColor =
+      isLight && userOptions.textColor.toLowerCase() === "#ebb305"
+        ? "#000000"
+        : userOptions.textColor;
+  } else {
+    titleColor = isLight ? '#000000' : '#ffffff';
+  }
+
+  // Local state for editing title, URL, scale, and scroll allowance
   const [editingTitle, setEditingTitle] = useState(false);
   const [widgetTitle, setWidgetTitle] = useState(widget.title || "Embedded Page");
   const [tempEmbedUrl, setTempEmbedUrl] = useState(widget.embedUrl || "");
@@ -114,7 +133,9 @@ const EmbedPageWidgetComponent: React.FC<EmbedWidgetProps> = ({
           </div>
         ) : (
           <div className="flex items-center">
-            <h4 className="font-bold text-xl text-yellow-500">{widget.title || "Embedded Page"}</h4>
+            <h4 className="font-bold text-xl" style={{ color: titleColor }}>
+              {widget.title || "Embedded Page"}
+            </h4>
             {isInEditMode && (
               <button
                 onClick={() => setEditingTitle(true)}
