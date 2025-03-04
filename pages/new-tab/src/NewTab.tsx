@@ -170,6 +170,7 @@ import { exampleThemeStorage } from '@extension/storage';
 const NewTab = () => {
   const [columns, setColumns] = useState<Columns>(getStoredColumns());
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showOtherOptions, setShowOtherOptions] = useState(false);
   
   // Load user options from localStorage (set via Options page)
   const [options, setOptions] = useState<OptionsConfig>(() => {
@@ -423,6 +424,7 @@ const NewTab = () => {
 
       {isEditMode && (
         <>
+          {/* Primary Edit Controls */}
           <div className="flex flex-wrap gap-2 mt-2">
             <button
               className="px-3 py-2 bg-[#ebb305] text-[#101827] font-bold rounded-md shadow hover:bg-[#d4a20f]"
@@ -436,57 +438,73 @@ const NewTab = () => {
             >
               + Add Embed Widget
             </button>
-            <button
-              className="px-3 py-2 bg-[#ebb305] text-[#101827] font-bold rounded-md shadow hover:bg-[#d4a20f]"
-              onClick={exportData}
-            >
-              Export Data
-            </button>
-            <button
-              onClick={importData}
-              className="px-3 py-2 bg-indigo-500 text-white font-bold rounded-md shadow hover:bg-indigo-600"
-            >
-              Import Configuration
-            </button>
           </div>
-          <div className="flex items-center gap-2 mt-4">
-            <select
-              value={selectedPreset}
-              onChange={(e) => setSelectedPreset(e.target.value)}
-              className="p-2 border rounded bg-gray-200 text-black"
+          {/* Other Options Accordion */}
+          <div className="mt-4">
+            <button 
+              className="px-3 py-2 bg-gray-300 text-black rounded-md shadow hover:bg-gray-400"
+              onClick={() => setShowOtherOptions(!showOtherOptions)}
             >
-              {Object.keys(presetBookmarkCategories).map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => addPresetBookmarkWidget(selectedPreset)}
-              className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
-            >
-              Add Preset Bookmark Widget
+              {showOtherOptions ? "Hide Other Options" : "Show Other Options"}
             </button>
-          </div>
-          {/* New preset embed widget section */}
-          <div className="flex items-center gap-2 mt-4">
-            <select
-              value={selectedEmbedPreset}
-              onChange={(e) => setSelectedEmbedPreset(e.target.value)}
-              className="p-2 border rounded bg-gray-200 text-black"
-            >
-              {Object.keys(presetEmbedPages).map((key) => (
-                <option key={key} value={key}>
-                  {key}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => addPresetEmbedWidget(selectedEmbedPreset)}
-              className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
-            >
-              + Add Preset Embed Widget
-            </button>
+            {showOtherOptions && (
+              <div className="flex flex-col gap-4 mt-2">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="px-3 py-2 bg-[#ebb305] text-[#101827] font-bold rounded-md shadow hover:bg-[#d4a20f]"
+                    onClick={exportData}
+                  >
+                    Export Data
+                  </button>
+                  <button
+                    onClick={importData}
+                    className="px-3 py-2 bg-indigo-500 text-white font-bold rounded-md shadow hover:bg-indigo-600"
+                  >
+                    Import Configuration
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="font-bold">AI Tools:</label>
+                  <select
+                    value={selectedPreset}
+                    onChange={(e) => setSelectedPreset(e.target.value)}
+                    className="p-2 border rounded bg-gray-200 text-black"
+                  >
+                    {Object.keys(presetBookmarkCategories).map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => addPresetBookmarkWidget(selectedPreset)}
+                    className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                  >
+                    Add Preset Bookmark Widget
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="font-bold">Pomodoro:</label>
+                  <select
+                    value={selectedEmbedPreset}
+                    onChange={(e) => setSelectedEmbedPreset(e.target.value)}
+                    className="p-2 border rounded bg-gray-200 text-black"
+                  >
+                    {Object.keys(presetEmbedPages).map((key) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => addPresetEmbedWidget(selectedEmbedPreset)}
+                    className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                  >
+                    + Add Preset Embed Widget
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -562,4 +580,4 @@ const NewTab = () => {
   );
 };
 
-export default NewTab
+export default NewTab;
