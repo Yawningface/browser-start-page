@@ -43,7 +43,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "lucide-react": "^0.477.0",
-    "react": "19.0.0",
+    "react": "19.1.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "19.0.0"
   },
@@ -56,7 +56,7 @@
     "@types/eslint__eslintrc": "^2.1.2",
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^22.5.5",
-    "@types/react": "^19.0.8",
+    "@types/react": "^19.1.0",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
