@@ -1,49 +1,58 @@
 {
-  "col-1": [
-    {
-      "id": "widget-office-suite",
-      "type": "bookmark",
-      "title": "Office Suite",
-      "urls": [
-        { "url": "https://www.office.com", "displayName": "Office 365" },
-        { "url": "https://outlook.office.com", "displayName": "Outlook" },
-        { "url": "https://www.onenote.com", "displayName": "OneNote" }
-      ]
-    }
-  ],
-  "col-2": [
-    {
-      "id": "widget-collaboration",
-      "type": "bookmark",
-      "title": "Collaboration",
-      "urls": [
-        { "url": "https://teams.microsoft.com", "displayName": "Teams" },
-        { "url": "https://planner.office.com", "displayName": "Planner" },
-        { "url": "https://www.sharepoint.com", "displayName": "SharePoint" }
-      ]
-    }
-  ],
-  "col-3": [
-    {
-      "id": "widget-cloud-tools",
-      "type": "bookmark",
-      "title": "Cloud Tools",
-      "urls": [
-        { "url": "https://portal.azure.com", "displayName": "Azure Portal" },
-        { "url": "https://powerapps.microsoft.com", "displayName": "Power Apps" },
-        { "url": "https://flow.microsoft.com", "displayName": "Power Automate" }
-      ]
-    }
-  ],
-  "col-4": [
-    {
-      "id": "widget-professional-growth",
-      "type": "bookmark",
-      "title": "Professional Growth",
-      "urls": [
-        { "url": "https://learn.microsoft.com", "displayName": "Microsoft Learn" },
-        { "url": "https://www.linkedin.com/learning", "displayName": "LinkedIn Learning" }
-      ]
-    }
-  ]
+  "columns": {
+    "col-1": [
+      {
+        "id": "widget-office-suite",
+        "type": "bookmark",
+        "title": "Office Suite",
+        "urls": [
+          { "url": "https://www.office.com", "displayName": "Office 365" },
+          { "url": "https://outlook.office.com", "displayName": "Outlook" },
+          { "url": "https://www.onenote.com", "displayName": "OneNote" }
+        ]
+      }
+    ],
+    "col-2": [
+      {
+        "id": "widget-collaboration",
+        "type": "bookmark",
+        "title": "Collaboration",
+        "urls": [
+          { "url": "https://teams.microsoft.com", "displayName": "Teams" },
+          { "url": "https://planner.office.com", "displayName": "Planner" },
+          { "url": "https://www.sharepoint.com", "displayName": "SharePoint" }
+        ]
+      }
+    ],
+    "col-3": [
+      {
+        "id": "widget-cloud-tools",
+        "type": "bookmark",
+        "title": "Cloud Tools",
+        "urls": [
+          { "url": "https://portal.azure.com", "displayName": "Azure Portal" },
+          { "url": "https://powerapps.microsoft.com", "displayName": "Power Apps" },
+          { "url": "https://flow.microsoft.com", "displayName": "Power Automate" }
+        ]
+      }
+    ],
+    "col-4": [
+      {
+        "id": "widget-professional-growth",
+        "type": "bookmark",
+        "title": "Professional Growth",
+        "urls": [
+          { "url": "https://learn.microsoft.com", "displayName": "Microsoft Learn" },
+          { "url": "https://www.linkedin.com/learning", "displayName": "LinkedIn Learning" }
+        ]
+      }
+    ]
+  },
+  "options": {
+    "textColor": "#005a9e",
+    "backgroundMode": "solid",
+    "backgroundColor": "#f3f2f1",
+    "backgroundImageUrl": "",
+    "fontFamily": "Segoe UI"
+  }
 }
