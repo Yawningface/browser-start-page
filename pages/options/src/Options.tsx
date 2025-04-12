@@ -2,45 +2,46 @@ import React, { useState, useEffect, ChangeEvent } from 'react';
 import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
 import { t } from '@extension/i18n';
+import defaultConfig from './default.json';
 
 interface OptionsConfig {
   textColor: string;
-  backgroundMode: "default" | "solid" | "image";
+  backgroundMode: 'default' | 'solid' | 'image';
   backgroundColor: string;
   backgroundImageUrl: string;
   fontFamily: string;
 }
 
-const DEFAULT_CONFIG: OptionsConfig = {
-  textColor: "#ebb305", // default yellow
-  backgroundMode: "default",
-  backgroundColor: "#ffffff",
-  backgroundImageUrl: "",
-  fontFamily: "Arial",
+interface UnifiedConfig {
+  columns: Record<string, any[]>;
+  options: OptionsConfig;
+}
+
+const DEFAULT_UNIFIED_CONFIG: UnifiedConfig = {
+  columns: defaultConfig.columns,
+  options: defaultConfig.options as OptionsConfig, // Cast to OptionsConfig
 };
 
 const Options = () => {
   const theme = useStorage(exampleThemeStorage);
   const isLight = theme === 'light';
 
-  // Load options configuration from localStorage.
-  const [config, setConfig] = useState<OptionsConfig>(() => {
-    const stored = localStorage.getItem('userOptions');
-    return stored ? JSON.parse(stored) : DEFAULT_CONFIG;
+  const [config, setConfig] = useState<UnifiedConfig>(() => {
+    const stored = localStorage.getItem('unifiedConfig');
+    return stored ? JSON.parse(stored) : DEFAULT_UNIFIED_CONFIG;
   });
 
-  // Save config changes to localStorage.
   useEffect(() => {
-    localStorage.setItem('userOptions', JSON.stringify(config));
+    localStorage.setItem('unifiedConfig', JSON.stringify(config));
   }, [config]);
 
   const exportData = () => {
-    const dataStr = JSON.stringify({ config }, null, 2);
+    const dataStr = JSON.stringify(config, null, 2);
     const dataUri =
       'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', 'userOptions.json');
+    linkElement.setAttribute('download', 'configuration.json');
     linkElement.click();
   };
 
@@ -55,8 +56,12 @@ const Options = () => {
         reader.onload = (e) => {
           try {
             const importedConfig = JSON.parse(e.target?.result as string);
-            setConfig(importedConfig);
-            alert('Configuration imported successfully!');
+            if (importedConfig.columns && importedConfig.options) {
+              setConfig(importedConfig);
+              alert('Configuration imported successfully!');
+            } else {
+              alert('Invalid configuration file: Missing columns or options.');
+            }
           } catch (error) {
             alert('Failed to import configuration: Invalid file.');
           }
@@ -74,7 +79,10 @@ const Options = () => {
       reader.onload = (ev) => {
         const dataUrl = ev.target?.result;
         if (typeof dataUrl === 'string') {
-          setConfig({ ...config, backgroundImageUrl: dataUrl });
+          setConfig({
+            ...config,
+            options: { ...config.options, backgroundImageUrl: dataUrl },
+          });
         }
       };
       reader.readAsDataURL(file);
@@ -82,20 +90,23 @@ const Options = () => {
   };
 
   const resetConfig = () => {
-    setConfig(DEFAULT_CONFIG);
+    setConfig(DEFAULT_UNIFIED_CONFIG);
   };
 
   return (
-    <div className={`min-h-screen p-4 ${isLight ? 'bg-slate-50 text-gray-900' : 'bg-gray-800 text-gray-100'}`}>
+    <div
+      className={`min-h-screen p-4 ${
+        isLight ? 'bg-slate-50 text-gray-900' : 'bg-gray-800 text-gray-100'
+      }`}
+    >
       <div className="max-w-lg mx-auto">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-center mb-2">Options</h1>
         </header>
-        
+
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Theme</h2>
           <div className="flex items-center">
-            {/* Tailwind switch built from a checkbox */}
             <label className="relative inline-block w-12 h-6 cursor-pointer">
               <input
                 type="checkbox"
@@ -104,28 +115,32 @@ const Options = () => {
                 className="sr-only peer"
               />
               <div className="w-full h-full bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors duration-200"></div>
-              <div className="absolute top-0 left-0 w-6 h-6 bg-white rounded-full border border-gray-300 
-                transition-transform duration-200 peer-checked:translate-x-6"></div>
+              <div className="absolute top-0 left-0 w-6 h-6 bg-white rounded-full border border-gray-300 transition-transform duration-200 peer-checked:translate-x-6"></div>
             </label>
             <span className="ml-4">
               {isLight ? 'Light Mode (☀️)' : 'Dark Mode (🌙)'}
             </span>
           </div>
         </section>
-        
+
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Text Color</h2>
           <div className="flex items-center">
             <input
               type="color"
-              value={config.textColor}
-              onChange={(e) => setConfig({ ...config, textColor: e.target.value })}
+              value={config.options.textColor}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  options: { ...config.options, textColor: e.target.value },
+                })
+              }
               className="w-12 h-12 mr-4"
             />
-            <span>Current Text Color: {config.textColor}</span>
+            <span>Current Text Color: {config.options.textColor}</span>
           </div>
         </section>
-        
+
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Background</h2>
           <div className="mb-4">
@@ -134,8 +149,13 @@ const Options = () => {
                 type="radio"
                 name="backgroundMode"
                 value="default"
-                checked={config.backgroundMode === "default"}
-                onChange={() => setConfig({ ...config, backgroundMode: "default" })}
+                checked={config.options.backgroundMode === 'default'}
+                onChange={() =>
+                  setConfig({
+                    ...config,
+                    options: { ...config.options, backgroundMode: 'default' },
+                  })
+                }
                 className="mr-2"
               />
               Default
@@ -145,8 +165,13 @@ const Options = () => {
                 type="radio"
                 name="backgroundMode"
                 value="solid"
-                checked={config.backgroundMode === "solid"}
-                onChange={() => setConfig({ ...config, backgroundMode: "solid" })}
+                checked={config.options.backgroundMode === 'solid'}
+                onChange={() =>
+                  setConfig({
+                    ...config,
+                    options: { ...config.options, backgroundMode: 'solid' },
+                  })
+                }
                 className="mr-2"
               />
               Solid Color
@@ -156,25 +181,38 @@ const Options = () => {
                 type="radio"
                 name="backgroundMode"
                 value="image"
-                checked={config.backgroundMode === "image"}
-                onChange={() => setConfig({ ...config, backgroundMode: "image" })}
+                checked={config.options.backgroundMode === 'image'}
+                onChange={() =>
+                  setConfig({
+                    ...config,
+                    options: { ...config.options, backgroundMode: 'image' },
+                  })
+                }
                 className="mr-2"
               />
               Background Image
             </label>
           </div>
-          {config.backgroundMode === "solid" && (
+          {config.options.backgroundMode === 'solid' && (
             <div className="flex items-center">
               <input
                 type="color"
-                value={config.backgroundColor || "#ffffff"}
-                onChange={(e) => setConfig({ ...config, backgroundColor: e.target.value })}
+                value={config.options.backgroundColor || '#ffffff'}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    options: {
+                      ...config.options,
+                      backgroundColor: e.target.value,
+                    },
+                  })
+                }
                 className="w-12 h-12 mr-4"
               />
               <span>Choose a solid background color</span>
             </div>
           )}
-          {config.backgroundMode === "image" && (
+          {config.options.backgroundMode === 'image' && (
             <div className="flex flex-col">
               <input
                 type="file"
@@ -182,22 +220,33 @@ const Options = () => {
                 onChange={handleBackgroundImageFile}
                 className="mb-2"
               />
-              {config.backgroundImageUrl && (
+              {config.options.backgroundImageUrl && (
                 <div className="mt-2">
-                  <img src={config.backgroundImageUrl} alt="Background Preview" className="w-full max-h-64 object-contain" />
+                  <img
+                    src={config.options.backgroundImageUrl}
+                    alt="Background Preview"
+                    className="w-full max-h-64 object-contain"
+                  />
                 </div>
               )}
             </div>
           )}
         </section>
-        
+
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Font Selection</h2>
           <div className="flex items-center">
             <select
-              value={config.fontFamily}
-              onChange={(e) => setConfig({ ...config, fontFamily: e.target.value })}
-              className={`p-2 border rounded ${isLight ? 'bg-gray-200 text-black' : 'bg-gray-700 text-white'}`}
+              value={config.options.fontFamily}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  options: { ...config.options, fontFamily: e.target.value },
+                })
+              }
+              className={`p-2 border rounded ${
+                isLight ? 'bg-gray-200 text-black' : 'bg-gray-700 text-white'
+              }`}
             >
               <option value="Arial">Arial</option>
               <option value="Helvetica">Helvetica</option>
@@ -205,22 +254,28 @@ const Options = () => {
               <option value="Courier New">Courier New</option>
               <option value="Verdana">Verdana</option>
               <option value="sans-serif">Sans-serif</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Inter">Inter</option>
+              <option value="Segoe UI">Segoe UI</option>
             </select>
-            <span className="ml-4">Current Font: {config.fontFamily}</span>
+            <span className="ml-4">Current Font: {config.options.fontFamily}</span>
           </div>
         </section>
-        
+
         <section className="mb-6 border p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-2">Export/Import Configuration</h2>
+          <h2 className="text-xl font-semibold mb-2">
+            Export/Import Configuration
+          </h2>
           <p className="text-sm mb-2 text-gray-500">
-            Use the buttons below to export your current options configuration to a file, or to import a configuration from a file.
+            Use the buttons below to export your current configuration (appearance
+            and widgets) to a file, or to import a configuration from a file.
           </p>
           <div className="flex flex-col space-y-2">
             <button
               onClick={exportData}
               className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              Export Data
+              Export Configuration
             </button>
             <button
               onClick={importConfig}
@@ -230,7 +285,7 @@ const Options = () => {
             </button>
           </div>
         </section>
-  
+
         <section className="mb-6 border p-4 rounded shadow">
           <h2 className="text-xl font-semibold mb-2">Reset Configuration</h2>
           <button
@@ -240,7 +295,6 @@ const Options = () => {
             Reset to Defaults
           </button>
         </section>
-  
       </div>
     </div>
   );

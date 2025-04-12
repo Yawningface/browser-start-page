@@ -204,7 +204,6 @@ const WidgetComponent: React.FC<WidgetProps> = ({ widget, updateWidget, removeWi
           </div>
         ) : (
           <div className="flex items-center">
-            {/* Updated title: remove text-yellow-500 and use inline style */}
             <h4 className="font-bold text-xl" style={{ color: titleColor }}>
               {widget.title || "Bookmarks"}
             </h4>
@@ -223,20 +222,7 @@ const WidgetComponent: React.FC<WidgetProps> = ({ widget, updateWidget, removeWi
         {isInEditMode && (
           <div className="flex items-center">
             <button
-              onClick={() => {
-                if (chrome && chrome.runtime && chrome.runtime.openOptionsPage) {
-                  chrome.runtime.openOptionsPage();
-                } else {
-                  console.error('Chrome runtime API not available');
-                }
-              }}
-              className="text-gray-300 hover:text-white ml-2"
-              title="Extension Options"
-            >
-              Options
-            </button>
-            <button
-              className="text-red-500 hover:text-red-600 ml-2"
+              className="text-red-500 hover:text-red-600"
               onClick={handleDeleteClick}
               title="Remove Widget"
             >
