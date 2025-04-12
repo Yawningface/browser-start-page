@@ -1,0 +1,50 @@
+{
+  "col-1": [
+    {
+      "id": "widget-productivity",
+      "type": "bookmark",
+      "title": "Productivity Tools",
+      "urls": [
+        { "url": "https://www.notion.so", "displayName": "Notion" },
+        { "url": "https://todoist.com", "displayName": "Todoist" },
+        { "url": "https://www.evernote.com", "displayName": "Evernote" }
+      ]
+    }
+  ],
+  "col-2": [
+    {
+      "id": "widget-news",
+      "type": "bookmark",
+      "title": "News & Updates",
+      "urls": [
+        { "url": "https://www.bbc.com", "displayName": "BBC News" },
+        { "url": "https://www.reuters.com", "displayName": "Reuters" },
+        { "url": "https://news.google.com", "displayName": "Google News" }
+      ]
+    }
+  ],
+  "col-3": [
+    {
+      "id": "widget-utilities",
+      "type": "bookmark",
+      "title": "Utilities",
+      "urls": [
+        { "url": "https://www.dropbox.com", "displayName": "Dropbox" },
+        { "url": "https://www.google.com/maps", "displayName": "Google Maps" },
+        { "url": "https://translate.google.com", "displayName": "Google Translate" }
+      ]
+    }
+  ],
+  "col-4": [
+    {
+      "id": "widget-social-fun",
+      "type": "bookmark",
+      "title": "Social & Fun",
+      "urls": [
+        { "url": "https://www.reddit.com", "displayName": "Reddit" },
+        { "url": "https://www.youtube.com", "displayName": "YouTube" },
+        { "url": "https://x.com", "displayName": "X" }
+      ]
+    }
+  ]
+}

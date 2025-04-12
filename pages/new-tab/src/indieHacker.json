@@ -1,0 +1,49 @@
+{
+  "col-1": [
+    {
+      "id": "widget-maker-tools",
+      "type": "bookmark",
+      "title": "Maker Tools",
+      "urls": [
+        { "url": "https://www.notion.so", "displayName": "Notion" },
+        { "url": "https://www.webflow.com", "displayName": "Webflow" },
+        { "url": "https://www.figma.com", "displayName": "Figma" },
+        { "url": "https://github.com", "displayName": "GitHub" }
+      ]
+    }
+  ],
+  "col-2": [
+    {
+      "id": "widget-marketing",
+      "type": "bookmark",
+      "title": "Marketing",
+      "urls": [
+        { "url": "https://analytics.google.com", "displayName": "Google Analytics" },
+        { "url": "https://www.mailchimp.com", "displayName": "Mailchimp" },
+        { "url": "https://buffer.com", "displayName": "Buffer" }
+      ]
+    }
+  ],
+  "col-3": [
+    {
+      "id": "widget-pomodoro",
+      "type": "embed",
+      "title": "Pomodoro Timer",
+      "embedUrl": "https://notion.yawningface.org/pomodoro",
+      "embedScale": 0.6,
+      "embedAllowScroll": true
+    }
+  ],
+  "col-4": [
+    {
+      "id": "widget-growth-tools",
+      "type": "bookmark",
+      "title": "Growth Tools",
+      "urls": [
+        { "url": "https://www.indiehackers.com", "displayName": "Indie Hackers" },
+        { "url": "https://www.producthunt.com", "displayName": "Product Hunt" },
+        { "url": "https://news.ycombinator.com", "displayName": "Hacker News" }
+      ]
+    }
+  ]
+}

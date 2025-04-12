@@ -1,0 +1,51 @@
+{
+  "col-1": [
+    {
+      "id": "widget-workspace",
+      "type": "bookmark",
+      "title": "Workspace Apps",
+      "urls": [
+        { "url": "https://drive.google.com", "displayName": "Drive" },
+        { "url": "https://mail.google.com", "displayName": "Gmail" },
+        { "url": "https://calendar.google.com", "displayName": "Calendar" },
+        { "url": "https://docs.google.com", "displayName": "Docs" }
+      ]
+    }
+  ],
+  "col-2": [
+    {
+      "id": "widget-analytics",
+      "type": "bookmark",
+      "title": "Analytics & Ads",
+      "urls": [
+        { "url": "https://analytics.google.com", "displayName": "Google Analytics" },
+        { "url": "https://ads.google.com", "displayName": "Google Ads" },
+        { "url": "https://searchconsole.google.com", "displayName": "Search Console" }
+      ]
+    }
+  ],
+  "col-3": [
+    {
+      "id": "widget-search-tools",
+      "type": "bookmark",
+      "title": "Search & Tools",
+      "urls": [
+        { "url": "https://www.google.com", "displayName": "Google Search" },
+        { "url": "https://translate.google.com", "displayName": "Google Translate" },
+        { "url": "https://www.google.com/maps", "displayName": "Google Maps" }
+      ]
+    }
+  ],
+  "col-4": [
+    {
+      "id": "widget-content-creation",
+      "type": "bookmark",
+      "title": "Content Creation",
+      "urls": [
+        { "url": "https://www.youtube.com", "displayName": "YouTube" },
+        { "url": "https://www.blogger.com", "displayName": "Blogger" },
+        { "url": "https://photos.google.com", "displayName": "Google Photos" }
+      ]
+    }
+  ]
+}
