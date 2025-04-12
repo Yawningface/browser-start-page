@@ -9,6 +9,13 @@ import WidgetComponent from './WidgetComponent';
 import EmbedPageWidgetComponent from './EmbedPageWidgetComponent';
 import GoogleSearchBar from './GoogleSearchBar';
 
+// Import JSON configurations
+import defaultConfig from './default.json';
+import indieHackerConfig from './indieHacker.json';
+import microsoftConfig from './microsoft.json';
+import googleConfig from './google.json';
+
+
 export type Widget = {
   id: string;
   type: "bookmark" | "embed";
@@ -26,7 +33,15 @@ export type Columns = {
   [key: string]: Widget[];
 };
 
-// New custom default configuration for new installs.
+// Configuration map with type assertion
+const configMap: { [key: string]: Columns } = {
+  default: defaultConfig as Columns,
+  indieHacker: indieHackerConfig as Columns,
+  microsoft: microsoftConfig as Columns,
+  google: googleConfig as Columns,
+
+};
+
 const getStoredColumns = (): Columns => {
   const saved = localStorage.getItem('columns');
   if (saved) {
@@ -36,55 +51,8 @@ const getStoredColumns = (): Columns => {
       console.error('Error parsing columns from localStorage:', error);
     }
   }
-  // On a new install, return a custom default configuration:
-  return {
-    'col-1': [
-      {
-        id: 'widget-google-tools',
-        type: 'bookmark',
-        title: 'Google Tools',
-        urls: [
-          { url: "https://drive.google.com", displayName: "Drive" },
-          { url: "https://mail.google.com", displayName: "Gmail" },
-          { url: "https://calendar.google.com", displayName: "Calendar" },
-        ],
-      },
-    ],
-    'col-2': [
-      {
-        id: 'widget-microsoft-tools',
-        type: 'bookmark',
-        title: 'Microsoft Tools',
-        urls: [
-          { url: "https://www.office.com", displayName: "Office 365" },
-          { url: "https://outlook.live.com", displayName: "Outlook" },
-        ],
-      },
-    ],
-    'col-3': [
-      {
-        id: 'widget-pomodoro',
-        type: 'embed',
-        title: 'Pomodoro',
-        embedUrl: 'https://notion.yawningface.org/pomodoro',
-        embedScale: 0.6,
-      },
-    ],
-    'col-4': [
-      {
-        id: 'widget-ai-tools',
-        type: 'bookmark',
-        title: 'AI Tools',
-        urls: [
-          { url: "https://chat.openai.com", displayName: "ChatGPT" },
-          { url: "https://chat.mistral.ai/chat", displayName: "Mistral Chat" },
-          { url: "https://www.perplexity.ai", displayName: "Perplexity" },
-          { url: "https://claude.ai/new", displayName: "Claude" },
-          { url: "https://grok.com/", displayName: "Grok" },
-        ],
-      },
-    ],
-  };
+  // Return default configuration for new installs
+  return configMap['default'];
 };
 
 interface OptionsConfig {
@@ -171,6 +139,7 @@ const NewTab = () => {
   const [columns, setColumns] = useState<Columns>(getStoredColumns());
   const [isEditMode, setIsEditMode] = useState(false);
   const [showOtherOptions, setShowOtherOptions] = useState(false);
+  const [selectedConfig, setSelectedConfig] = useState<string>('default');
   
   // Load user options from localStorage (set via Options page)
   const [options, setOptions] = useState<OptionsConfig>(() => {
@@ -270,7 +239,6 @@ const NewTab = () => {
 
   const [selectedPreset, setSelectedPreset] = useState<string>("AI Tools");
 
-  // New state and function for embed preset widgets.
   const [selectedEmbedPreset, setSelectedEmbedPreset] = useState<string>("Pomodoro");
 
   const addPresetEmbedWidget = (presetName: string) => {
@@ -289,6 +257,14 @@ const NewTab = () => {
     });
   };
 
+  const applyConfig = (configName: string) => {
+    if (configMap[configName]) {
+      setColumns(configMap[configName]);
+      localStorage.setItem('columns', JSON.stringify(configMap[configName]));
+      setSelectedConfig(configName);
+    }
+  };
+
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode);
   };
@@ -304,7 +280,6 @@ const NewTab = () => {
     linkElement.click();
   };
 
-  // New import configuration function
   const importData = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -338,8 +313,6 @@ const NewTab = () => {
 
   const columnOrder = ['col-1', 'col-2', 'col-3', 'col-4'];
 
-  // Build the container style: if a custom background is chosen, use it;
-  // otherwise, use theme-based defaults.
   let containerStyle: React.CSSProperties = {
     fontFamily: options.fontFamily,
   };
@@ -359,7 +332,6 @@ const NewTab = () => {
       color: options.textColor,
     };
   } else {
-    // Use theme defaults if no custom background is set.
     containerStyle = {
       ...containerStyle,
       backgroundColor: isLight ? "#f3f4f6" : "#111827",
@@ -424,6 +396,26 @@ const NewTab = () => {
 
       {isEditMode && (
         <>
+          {/* Configuration Selector */}
+          <div className="flex items-center gap-2 mt-4">
+            <label className="font-bold">Select Configuration:</label>
+            <select
+              value={selectedConfig}
+              onChange={(e) => {
+                const configName = e.target.value;
+                setSelectedConfig(configName);
+                applyConfig(configName);
+              }}
+              className="p-2 border rounded bg-gray-200 text-black"
+            >
+              {Object.keys(configMap).map((key) => (
+                <option key={key} value={key}>
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Primary Edit Controls */}
           <div className="flex flex-wrap gap-2 mt-2">
             <button
@@ -464,7 +456,7 @@ const NewTab = () => {
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="font-bold">AI Tools:</label>
+                  <label className="font-bold">Preset Bookmarks:</label>
                   <select
                     value={selectedPreset}
                     onChange={(e) => setSelectedPreset(e.target.value)}
@@ -484,7 +476,7 @@ const NewTab = () => {
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="font-bold">Pomodoro:</label>
+                  <label className="font-bold">Preset Embeds:</label>
                   <select
                     value={selectedEmbedPreset}
                     onChange={(e) => setSelectedEmbedPreset(e.target.value)}
