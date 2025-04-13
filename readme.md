@@ -82,6 +82,14 @@ Browser Start Page is an open source, highly customizable start page designed to
 
 ---
 
+## Publish in the chrome web store
+From inside your extension’s folder (the one that contains manifest.json), run:
+
+```bash
+zip -r ../my-extension.zip . -x "*.DS_Store" -x "__MACOSX/*"
+```
+And then you can upload that folder.
+
 ## Usage
 
 - **Marker Widgets:** Easily add, edit, and remove links with custom aliases for quick access.
