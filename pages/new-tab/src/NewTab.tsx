@@ -38,15 +38,17 @@ export interface OptionsConfig {
 interface UnifiedConfig {
   columns: Columns;
   options: OptionsConfig;
+  lastModified: number;
 }
 
 const configMap: { [key: string]: UnifiedConfig } = {
-  default: defaultConfig as UnifiedConfig,
-  indieHacker: indieHackerConfig as UnifiedConfig,
-  microsoft: microsoftConfig as UnifiedConfig,
-  google: googleConfig as UnifiedConfig,
+  default: { ...(defaultConfig as any), lastModified: 0 },
+  indieHacker: { ...(indieHackerConfig as any), lastModified: 0 },
+  microsoft: { ...(microsoftConfig as any), lastModified: 0 },
+  google: { ...(googleConfig as any), lastModified: 0 },
 };
 
+// Keep presetBookmarkCategories and presetEmbedPages unchanged
 const presetBookmarkCategories: {
   [category: string]: Array<{ url: string; displayName: string }>;
 } = {
@@ -108,21 +110,58 @@ const presetEmbedPages: {
   },
 };
 
-const getStoredConfig = (): UnifiedConfig => {
+// Helper functions for storage
+const getLocalConfig = (): UnifiedConfig => {
   const saved = localStorage.getItem('unifiedConfig');
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      return { ...parsed, lastModified: parsed.lastModified || Date.now() };
     } catch (error) {
-      console.error('Error parsing unifiedConfig from localStorage:', error);
+      console.error('Error parsing unifiedConfig:', error);
     }
   }
-  return configMap['default'];
+  return { ...configMap['default'], lastModified: Date.now() };
+};
+
+const saveLocalConfig = (config: UnifiedConfig) => {
+  localStorage.setItem('unifiedConfig', JSON.stringify(config));
+};
+
+const getSyncConfig = (callback: (config: UnifiedConfig | null) => void) => {
+  chrome.storage.sync.get('unifiedConfig', (result) => {
+    if (chrome.runtime.lastError) {
+      console.error('Sync load error:', chrome.runtime.lastError);
+      callback(null);
+      return;
+    }
+    const config = result.unifiedConfig;
+    callback(
+      config
+        ? { ...config, lastModified: config.lastModified || Date.now() }
+        : null
+    );
+  });
+};
+
+const saveSyncConfig = (config: UnifiedConfig) => {
+  chrome.storage.sync.set({ unifiedConfig: config }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('Sync save error:', chrome.runtime.lastError);
+    }
+  });
+};
+
+const mergeConfigs = (
+  local: UnifiedConfig,
+  sync: UnifiedConfig
+): UnifiedConfig => {
+  return sync.lastModified > local.lastModified ? sync : local;
 };
 
 const NewTab = () => {
-  const [{ columns, options }, setUnifiedConfig] = useState<UnifiedConfig>(
-    getStoredConfig()
+  const [unifiedConfig, setUnifiedConfig] = useState<UnifiedConfig>(
+    getLocalConfig()
   );
   const [isEditMode, setIsEditMode] = useState(false);
   const [showOtherOptions, setShowOtherOptions] = useState(false);
@@ -134,21 +173,61 @@ const NewTab = () => {
   const theme = useStorage(exampleThemeStorage);
   const isLight = theme === 'light';
 
+  // Load and merge configs on mount
   useEffect(() => {
-    localStorage.setItem('unifiedConfig', JSON.stringify({ columns, options }));
-  }, [columns, options]);
+    if (navigator.onLine) {
+      getSyncConfig((syncConfig) => {
+        if (syncConfig) {
+          const merged = mergeConfigs(unifiedConfig, syncConfig);
+          setUnifiedConfig({ ...merged, lastModified: Date.now() });
+          saveLocalConfig(merged);
+          saveSyncConfig(merged);
+        }
+      });
+    }
+  }, []);
+
+  // Save changes to local and sync storage
+  useEffect(() => {
+    const config = { ...unifiedConfig, lastModified: Date.now() };
+    saveLocalConfig(config);
+    if (navigator.onLine) {
+      saveSyncConfig(config);
+    }
+  }, [unifiedConfig]);
+
+  // Listen for sync changes from other devices
+  useEffect(() => {
+    const listener = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string
+    ) => {
+      if (area === 'sync' && changes.unifiedConfig) {
+        const syncConfig = changes.unifiedConfig.newValue;
+        if (
+          syncConfig &&
+          syncConfig.lastModified > unifiedConfig.lastModified
+        ) {
+          setUnifiedConfig({ ...syncConfig, lastModified: Date.now() });
+          saveLocalConfig(syncConfig);
+        }
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, [unifiedConfig]);
 
   const updateWidget = (
     widgetId: string,
     updater: (widget: Widget) => Widget | null
   ) => {
-    const newColumns: Columns = { ...columns };
+    const newColumns: Columns = { ...unifiedConfig.columns };
     for (const colId in newColumns) {
       newColumns[colId] = newColumns[colId]
         .map((w) => (w.id === widgetId ? updater(w) : w))
         .filter((w): w is Widget => w !== null);
     }
-    setUnifiedConfig({ columns: newColumns, options });
+    setUnifiedConfig({ ...unifiedConfig, columns: newColumns });
   };
 
   const removeWidget = (widgetId: string) => {
@@ -158,23 +237,20 @@ const NewTab = () => {
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const { source, destination } = result;
-
-    const sourceColumn = Array.from(columns[source.droppableId]);
+    const sourceColumn = [...unifiedConfig.columns[source.droppableId]];
     const destColumn =
       source.droppableId === destination.droppableId
         ? sourceColumn
-        : Array.from(columns[destination.droppableId]);
-
+        : [...unifiedConfig.columns[destination.droppableId]];
     const [movedWidget] = sourceColumn.splice(source.index, 1);
     destColumn.splice(destination.index, 0, movedWidget);
-
     setUnifiedConfig({
+      ...unifiedConfig,
       columns: {
-        ...columns,
+        ...unifiedConfig.columns,
         [source.droppableId]: sourceColumn,
         [destination.droppableId]: destColumn,
       },
-      options,
     });
   };
 
@@ -186,11 +262,11 @@ const NewTab = () => {
       urls: [],
     };
     setUnifiedConfig({
+      ...unifiedConfig,
       columns: {
-        ...columns,
-        'col-1': [newWidget, ...columns['col-1']],
+        ...unifiedConfig.columns,
+        'col-1': [newWidget, ...unifiedConfig.columns['col-1']],
       },
-      options,
     });
   };
 
@@ -203,11 +279,11 @@ const NewTab = () => {
       embedScale: 1,
     };
     setUnifiedConfig({
+      ...unifiedConfig,
       columns: {
-        ...columns,
-        'col-1': [newWidget, ...columns['col-1']],
+        ...unifiedConfig.columns,
+        'col-1': [newWidget, ...unifiedConfig.columns['col-1']],
       },
-      options,
     });
   };
 
@@ -221,11 +297,11 @@ const NewTab = () => {
       urls: presetBookmarks,
     };
     setUnifiedConfig({
+      ...unifiedConfig,
       columns: {
-        ...columns,
-        'col-1': [newWidget, ...columns['col-1']],
+        ...unifiedConfig.columns,
+        'col-1': [newWidget, ...unifiedConfig.columns['col-1']],
       },
-      options,
     });
   };
 
@@ -240,11 +316,11 @@ const NewTab = () => {
       embedScale: preset.embedScale,
     };
     setUnifiedConfig({
+      ...unifiedConfig,
       columns: {
-        ...columns,
-        'col-1': [newWidget, ...columns['col-1']],
+        ...unifiedConfig.columns,
+        'col-1': [newWidget, ...unifiedConfig.columns['col-1']],
       },
-      options,
     });
   };
 
@@ -254,7 +330,7 @@ const NewTab = () => {
         `WARNING: Applying the "${configName}" configuration will erase your current configuration. To keep your current setup, go to the Options page and export your configuration first. Do you want to proceed?`
       );
       if (confirmChange) {
-        setUnifiedConfig(configMap[configName]);
+        setUnifiedConfig({ ...configMap[configName], lastModified: Date.now() });
         setSelectedConfig(configName);
       }
     }
@@ -265,40 +341,37 @@ const NewTab = () => {
   };
 
   const openExtensionOptions = () => {
-    if (chrome && chrome.runtime && chrome.runtime.openOptionsPage) {
-      chrome.runtime.openOptionsPage();
-    } else {
+    chrome.runtime.openOptionsPage?.() ||
       console.error('Chrome runtime API not available');
-    }
   };
 
   const redirectToOptions = (action: 'import' | 'export') => {
     alert(
       `${action.charAt(0).toUpperCase() + action.slice(1)}ing the configuration is handled in the Options page. You will be redirected now.`
     );
-    if (chrome && chrome.runtime && chrome.runtime.openOptionsPage) {
-      chrome.runtime.openOptionsPage();
-    } else {
-      console.error('Chrome runtime API not available');
-    }
+    openExtensionOptions();
   };
 
   const columnOrder = ['col-1', 'col-2', 'col-3', 'col-4'];
 
-  // Apply fontFamily and textColor globally
-  const defaultTextColor = isLight && options.textColor === '#000000' ? '#000000' : options.textColor;
+  const defaultTextColor =
+    isLight && unifiedConfig.options.textColor === '#000000'
+      ? '#000000'
+      : unifiedConfig.options.textColor;
   const containerStyle: React.CSSProperties = {
-    fontFamily: options.fontFamily,
+    fontFamily: unifiedConfig.options.fontFamily,
     color: defaultTextColor,
     backgroundColor:
-      options.backgroundMode === 'solid' && options.backgroundColor
-        ? options.backgroundColor
+      unifiedConfig.options.backgroundMode === 'solid' &&
+      unifiedConfig.options.backgroundColor
+        ? unifiedConfig.options.backgroundColor
         : isLight
         ? '#f3f4f6'
         : '#111827',
-    ...(options.backgroundMode === 'image' && options.backgroundImageUrl
+    ...(unifiedConfig.options.backgroundMode === 'image' &&
+    unifiedConfig.options.backgroundImageUrl
       ? {
-          backgroundImage: `url(${options.backgroundImageUrl})`,
+          backgroundImage: `url(${unifiedConfig.options.backgroundImageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }
@@ -310,7 +383,7 @@ const NewTab = () => {
       <style>
         {`
           .new-tab-container {
-            font-family: ${options.fontFamily} !important;
+            font-family: ${unifiedConfig.options.fontFamily} !important;
             color: ${defaultTextColor} !important;
           }
           .new-tab-container a {
@@ -497,7 +570,7 @@ const NewTab = () => {
               <label className="font-bold">Preset Embeds:</label>
               <select
                 value={selectedEmbedPreset}
-                onClick={() => addPresetEmbedWidget(selectedEmbedPreset)}
+                onChange={(e) => setSelectedEmbedPreset(e.target.value)} // Fixed onClick to onChange
                 className="p-2 border rounded bg-gray-200 text-black"
               >
                 {Object.keys(presetEmbedPages).map((key) => (
@@ -532,46 +605,38 @@ const NewTab = () => {
                         : ''
                     }`}
                   >
-                    {columns[colId].length > 0 ? (
-                      columns[colId].map((widget, index) => (
+                    {unifiedConfig.columns[colId].length > 0 ? (
+                      unifiedConfig.columns[colId].map((widget, index) => (
                         <Draggable
                           key={widget.id}
                           draggableId={widget.id}
                           index={index}
                           isDragDisabled={!isEditMode}
                         >
-                          {(provided, snapshot) => {
-                            const draggableStyle = provided.draggableProps
-                              .style as React.CSSProperties;
-                            return (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className="w-full"
-                                style={{
-                                  ...draggableStyle,
-                                  width: draggableStyle.width || '100%',
-                                }}
-                              >
-                                {widget.type === 'embed' ? (
-                                  <EmbedPageWidgetComponent
-                                    widget={widget}
-                                    updateWidget={updateWidget}
-                                    removeWidget={removeWidget}
-                                    isInEditMode={isEditMode}
-                                  />
-                                ) : (
-                                  <WidgetComponent
-                                    widget={widget}
-                                    updateWidget={updateWidget}
-                                    removeWidget={removeWidget}
-                                    isInEditMode={isEditMode}
-                                  />
-                                )}
-                              </div>
-                            );
-                          }}
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className="w-full"
+                            >
+                              {widget.type === 'embed' ? (
+                                <EmbedPageWidgetComponent
+                                  widget={widget}
+                                  updateWidget={updateWidget}
+                                  removeWidget={removeWidget}
+                                  isInEditMode={isEditMode}
+                                />
+                              ) : (
+                                <WidgetComponent
+                                  widget={widget}
+                                  updateWidget={updateWidget}
+                                  removeWidget={removeWidget}
+                                  isInEditMode={isEditMode}
+                                />
+                              )}
+                            </div>
+                          )}
                         </Draggable>
                       ))
                     ) : (
