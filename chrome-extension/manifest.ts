@@ -4,21 +4,20 @@ const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 const manifest = {
   manifest_version: 3,
-  default_locale: 'en', // Kept for __MSG_...__ localization
+  default_locale: 'en', 
   name: '__MSG_extensionName__',
   version: packageJson.version,
   description: '__MSG_extensionDescription__',
-  permissions: ['storage'], // Only permission needed
+  permissions: ['storage'],
   chrome_url_overrides: {
     newtab: 'new-tab/index.html',
   },
   icons: {
     128: 'icon-128.png',
   },
-  // Optional fields below (kept from original but can be removed if unused)
   browser_specific_settings: {
     gecko: {
-      id: 'example@example.com',
+      id: 'browser-start-page@yourdomain.com',
       strict_min_version: '109.0',
     },
   },

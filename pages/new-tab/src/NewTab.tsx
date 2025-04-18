@@ -7,7 +7,6 @@ import {
 } from 'react-beautiful-dnd';
 import WidgetComponent from './WidgetComponent';
 import EmbedPageWidgetComponent from './EmbedPageWidgetComponent';
-import GoogleSearchBar from './GoogleSearchBar';
 import defaultConfig from './default.json';
 import indieHackerConfig from './indieHacker.json';
 import microsoftConfig from './microsoft.json';
@@ -116,6 +115,8 @@ const getLocalConfig = (): UnifiedConfig => {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
+      // Clean up enableGoogleSearch if present
+      delete parsed.enableGoogleSearch;
       return { ...parsed, lastModified: parsed.lastModified || Date.now() };
     } catch (error) {
       console.error('Error parsing unifiedConfig:', error);
@@ -166,7 +167,6 @@ const NewTab = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showOtherOptions, setShowOtherOptions] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<string>('default');
-  const [enableGoogleSearch, setEnableGoogleSearch] = useState(true);
   const [selectedPreset, setSelectedPreset] = useState<string>('AI Tools');
   const [selectedEmbedPreset, setSelectedEmbedPreset] =
     useState<string>('Pomodoro');
@@ -434,12 +434,6 @@ const NewTab = () => {
           </div>
         </div>
 
-        {!isEditMode && enableGoogleSearch && (
-          <div className="my-4">
-            <GoogleSearchBar />
-          </div>
-        )}
-
         {isEditMode && (
           <div className="flex flex-wrap gap-2 mt-2">
             <button
@@ -521,17 +515,6 @@ const NewTab = () => {
                 ))}
               </select>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="black-text-button px-3 py-1 bg-blue-500 text-xs rounded"
-                onClick={() => setEnableGoogleSearch((prev) => !prev)}
-                title="Toggle Google Search"
-              >
-                {enableGoogleSearch
-                  ? 'Disable Google Search'
-                  : 'Enable Google Search'}
-              </button>
-            </div>
             <div className="flex flex-wrap gap-2">
               <button
                 className="black-text-button px-3 py-2 bg-[#ebb305] font-bold rounded-md shadow hover:bg-[#d4a20f]"
@@ -570,7 +553,7 @@ const NewTab = () => {
               <label className="font-bold">Preset Embeds:</label>
               <select
                 value={selectedEmbedPreset}
-                onChange={(e) => setSelectedEmbedPreset(e.target.value)} // Fixed onClick to onChange
+                onChange={(e) => setSelectedEmbedPreset(e.target.value)}
                 className="p-2 border rounded bg-gray-200 text-black"
               >
                 {Object.keys(presetEmbedPages).map((key) => (
@@ -590,6 +573,7 @@ const NewTab = () => {
         )}
 
         <DragDropContext onDragEnd={onDragEnd}>
+          {/* Added mt-4 to push columns down; adjust to mt-6 or mt-8 for more spacing */}
           <div className="grid grid-cols-4 gap-4 mt-4">
             {columnOrder.map((colId) => (
               <Droppable droppableId={colId} key={colId}>
