@@ -2,9 +2,9 @@
 
 **Your Open Source Alternative to Star.me**
 
-🌐 **Live Demo:** [Browser Start Page Demo](https://browser-start-page.example.com)  
-🔗 **Website:** [YourWebsite.com](https://yourwebsite.com)  
-💻 **GitHub:** [Browser Start Page on GitHub](https://github.com/yourusername/browser-start-page)
+🌐 **Live Demo:** [Browser Start Page Demo](https://chromewebstore.google.com/detail/browser-start-page/cbmbipkecoonmcocfmoaddgmffbnfpho)  
+🔗 **Website:** [YourWebsite.com](https://yawningface.org/) 
+💻 **GitHub:** [Browser Start Page on GitHub](https://github.com/Yawningface/browser-start-page)
 
 Browser Start Page is an open source, highly customizable start page designed to enhance your browsing experience. As a powerful alternative to star.me, it combines the simplicity of marker widgets with the versatility of embed widgets, allowing you to create a personalized dashboard that works just the way you want.
 
