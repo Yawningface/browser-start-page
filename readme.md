@@ -6,32 +6,14 @@
 🔗 **Website:** [YourWebsite.com](https://yawningface.org/) 
 💻 **GitHub:** [Browser Start Page on GitHub](https://github.com/Yawningface/browser-start-page)
 
-Browser Start Page is an open source, highly customizable start page designed to enhance your browsing experience. As a powerful alternative to star.me, it combines the simplicity of marker widgets with the versatility of embed widgets, allowing you to create a personalized dashboard that works just the way you want.
+Browser Start Page is an open source, highly customizable start page (which appears when clicking new tab or when opening the browser) designed to enhance your browsing experience. As a powerful alternative to star.me, it combines the simplicity of marker widgets with the versatility of embed widgets, allowing you to create a personalized dashboard that works just the way you want.
 
 ---
+## Usage
 
-## Widgets & Features
-
-### Marker Widgets
-- **Customizable Links & Aliases:** Create markers to store multiple links with customizable aliases.
-- **SEO-Friendly:** Optimize your start page with keywords including **Google**, **Amazon**, **Facebook**, **Microsoft**, **Apple**, **Netflix**, and more.
-- **Quick Access:** Enjoy rapid access to your favorite websites and tools.
-
-### Embed Widgets
-- **Versatile Embedding:** Embed any webpage directly into your start page. For example, integrate a pomodoro timer, weather widget, news feed, or any productivity tool.
-- **Fully Customizable:** Tailor your embedded content to match your personal style and needs.
-- **Dynamic & Interactive:** Embed interactive pages to keep your start page lively and functional.
-
----
-
-## Why Choose Browser Start Page?
-
-- **Open Source:** Completely free and open to contributions.
-- **Highly Customizable:** Personalize every aspect of your start page—from link organization to embedded widgets.
-- **SEO-Optimized:** Leverage top brands like **Google**, **Amazon**, **Facebook**, **Microsoft**, **Apple**, and **Netflix** to boost your start page’s visibility.
-- **User-Friendly:** Intuitive design that makes setting up your dashboard a breeze.
-
----
+- **Marker Widgets:** Easily add, edit, and remove links with custom aliases for quick access.
+- **Embed Widgets:** Simply copy the URL of any webpage (e.g., your favorite productivity tool or a pomodoro timer) and embed it into your start page.
+- **Customization:** Modify settings, change themes, and organize your dashboard to reflect your unique workflow.
 
 ## Getting Started
 
@@ -90,11 +72,6 @@ zip -r ../my-extension.zip . -x "*.DS_Store" -x "__MACOSX/*"
 ```
 And then you can upload that folder.
 
-## Usage
-
-- **Marker Widgets:** Easily add, edit, and remove links with custom aliases for quick access.
-- **Embed Widgets:** Simply copy the URL of any webpage (e.g., your favorite productivity tool or a pomodoro timer) and embed it into your start page.
-- **Customization:** Modify settings, change themes, and organize your dashboard to reflect your unique workflow.
 
 ---
 
