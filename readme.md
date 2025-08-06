@@ -88,8 +88,3 @@ Contributions are welcome! If you have ideas, improvements, or bug fixes, please
 
 This project is licensed under the **MIT License**.
 
----
-
-🚀 **Created by [Your Name/Organization](https://yourwebsite.com)**  
-💻 **GitHub:** [Browser Start Page on GitHub](https://github.com/yourusername/browser-start-page)  
-🌐 **Live Demo:** [Browser Start Page Demo](https://browser-start-page.example.com)
